@@ -1,4 +1,7 @@
 const card = document.querySelectorAll('.card');
+const modal = document.querySelectorAll('.modal');
+const main = document.querySelector('main');
+const cancel = document.querySelectorAll('.cancel');
 
 // ------------------------------------------
 //  FETCH FUNCTIONS
@@ -35,13 +38,37 @@ Promise.all([
   	randomCities[i] = capitalize(data[0].results[i].location.city);
   }
 
+  let randomPhones = [];
+  for (let i = 0; i < 12; i++) {
+  	randomPhones[i] = data[0].results[i].cell;
+  }
+
+  let randomAddresses = [];
+  for (let i = 0; i < 12; i++) {
+  	randomAddresses[i] = capitalize(data[0].results[i].location.street + ", " + data[0].results[i].location.city + ", " + data[0].results[i].location.state + " " + data[0].results[i].location.postcode)
+  }
+
+  let randomBirthdays = [];
+  let randomBirthdayMonths = [];
+  let randomBirthdayDays = [];
+  let randomBirthdayYears = [];
+  for (let i = 0; i < 12; i++) {
+  	randomBirthdayMonths[i] = data[0].results[i].dob.date.substring(5,7);
+  	randomBirthdayDays[i] = data[0].results[i].dob.date.substring(8,10);
+  	randomBirthdayYears[i] = data[0].results[i].dob.date.substring(2,4);
+  	randomBirthdays[i] = 'Birthday: ' + randomBirthdayMonths[i] + "/" + randomBirthdayDays[i] + "/" + randomBirthdayYears[i];
+  }
+
   for (let i = 0; i < card.length; i++) {
   	let randomImage = randomImages[i];
   	let randomName = randomNames[i];
   	let randomEmail = randomEmails[i];
   	let randomCity = randomCities[i];
+  	let randomPhone = randomPhones[i];
+  	let randomAddress = randomAddresses[i];
+  	let randomBirthday = randomBirthdays[i];
 
-  	const html = `
+  	const htmlCard = `
 	    <img src='${randomImage}' alt>
 	    <div class='contact-info'>
 	    	<h2 class='name'>${randomName}</h2>
@@ -50,10 +77,24 @@ Promise.all([
 		</div>
   	`;
 
-  	card[i].innerHTML = html;
-  }
+  	const htmlModal = `
+  		<a href='#' class='cancel'>x</a>
+	    <img src='${randomImage}' alt>
+	    <div class='contact-info'>
+	    	<h2 class='name'>${randomName}</h2>
+			<p class='email'>${randomEmail}</p>
+			<p class='city'>${randomCity}</p>
+		</div>
+		<div class="additional-info">
+			<p class='phone'>${randomPhone}</p>
+			<p class='address'>${randomAddress}</p>
+			<p class='birthday'>${randomBirthday}</p>
+		</div>
+  	`;
 
-  console.log(data[0]);
+  	card[i].innerHTML = htmlCard;
+  	modal[i].innerHTML = htmlModal;
+  }
 
 })
 
@@ -69,18 +110,6 @@ function checkStatus(response) {
   }
 }
 
-function fetchBreedImage() {
-  const img = card.querySelector('img');
-  const p = card.querySelector('p');
-  
-  fetchData(`https://dog.ceo/api/breed/${breed}/images/random`)
-    .then(data => {
-      img.src = data.message;
-      img.alt = breed;
-      p.textContent = `Click to view more ${breed}s`;
-    })
-}
-
 function capitalize(str) {
     str = str.split(" ");
 
@@ -94,14 +123,23 @@ function capitalize(str) {
 // ------------------------------------------
 //  EVENT LISTENERS
 // ------------------------------------------
-// card.addEventListener('click', fetchBreedImage);
 
+for (let i = 0; i < card.length; i++) {
+    (function(index){
+        main.children[i].onclick = function(){
+            main.style.opacity = '.3';
+            main.style.pointerEvents = 'none';
+            modal[index].style.display = 'block';
+        }    
+    })(i);
+}
 
-
-// $.ajax({
-//   url: 'https://randomuser.me/api/?results=12',
-//   dataType: 'json',
-//   success: function(data) {
-//     console.log(data);
-//   }
-// });
+for (let i = 0; i < card.length; i++) {
+    (function(index){
+        modal[i].onclick = function(){
+            main.style.opacity = '1';
+            main.style.pointerEvents = 'auto';
+            modal[index].style.display = 'none';
+        }    
+    })(i);
+}
